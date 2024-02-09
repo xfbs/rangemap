@@ -67,23 +67,22 @@ where
     }
 }
 
-/// Minimal version of unstable [`Step`](core::iter::Step) trait
-/// from the Rust standard library.
+/// Get the predecessor and successor of a value.
 ///
-/// This is needed for [`RangeInclusiveMap`](crate::RangeInclusiveMap)
-/// because ranges stored as its keys interact with each other
-/// when the start of one is _adjacent_ the end of another.
-/// I.e. we need a concept of successor values rather than just
-/// equality, and that is what `Step` will
+/// This trait is a inimal version of the unstable [`Step`](core::iter::Step) trait from the Rust
+/// standard library.
+///
+/// This is needed for [`RangeInclusiveMap`](crate::RangeInclusiveMap) because ranges stored as its
+/// keys interact with each other when the start of one is _adjacent_ the end of another.  I.e. we
+/// need a concept of successor values rather than just equality, and that is what `Step` will
 /// eventually provide once it is stabilized.
 ///
-/// **NOTE:** This will likely be deprecated and then eventually
-/// removed once the standard library's `Step`
-/// trait is stabilised, as most crates will then likely implement `Step`
-/// for their types where appropriate.
+/// **NOTE:** This will likely be deprecated and then eventually removed once the standard
+/// library's `Step` trait is stabilised, as most crates will then likely implement `Step` for
+/// their types where appropriate.
 ///
-/// See [this issue](https://github.com/rust-lang/rust/issues/42168)
-/// for details about that stabilization process.
+/// See [this issue](https://github.com/rust-lang/rust/issues/42168) for details about that
+/// stabilization process.
 pub trait StepLite {
     /// Returns the _successor_ of `self`.
     ///

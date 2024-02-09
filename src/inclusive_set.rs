@@ -1,3 +1,5 @@
+//! # [`RangeInclusiveSet`] and related iterators.
+
 use core::borrow::Borrow;
 use core::fmt::{self, Debug};
 use core::iter::{DoubleEndedIterator, FromIterator};
@@ -438,9 +440,23 @@ impl<T: Ord + Clone + StepLite, const N: usize> From<[RangeInclusive<T>; N]>
     }
 }
 
-/// Create a [`RangeInclusiveSet`] from a list of ranges.
+/// Create a [`RangeInclusiveSet`] from a list of inclusive ranges.
 ///
-/// # Example
+/// This macro is a shorthand for creating a [`RangeInclusiveSet`] from an expression, similar to the
+/// `vec![]` macro provided by the standard library.
+///
+/// #### Examples
+///
+/// Create an empty inclusive range set. The type is needed to give the compiler a hint as to what
+/// the value of the ranges is.
+///
+/// ```rust
+/// use rangemap::{RangeInclusiveSet, range_inclusive_set};
+///
+/// let set: RangeInclusiveSet<u32> = range_inclusive_set![];
+/// ```
+///
+/// Create a range set from a list of ranges.
 ///
 /// ```rust
 /// # use rangemap::range_inclusive_set;

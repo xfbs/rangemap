@@ -1,3 +1,5 @@
+//! # [`RangeInclusiveMap`] and related iterators.
+
 use super::range_wrapper::RangeInclusiveStartWrapper;
 use crate::range_wrapper::RangeInclusiveEndWrapper;
 use crate::std_ext::*;
@@ -916,9 +918,22 @@ impl<K: Ord + Clone + StepLite, V: Eq + Clone, const N: usize> From<[(RangeInclu
     }
 }
 
-/// Create a [`RangeInclusiveMap`] from key-value pairs.
+/// Create a [`RangeInclusiveMap`] from inclusive range-value pairs.
 ///
-/// # Example
+/// This macro is a shorthand for creating range maps from expressions of range and value pairs.
+/// The pairs are separated by arrows, similar to how match statements look like.
+///
+/// #### Examples
+///
+/// Create an empty range map.
+///
+/// ```rust
+/// use rangemap::{RangeInclusiveMap, range_inclusive_map};
+///
+/// let map: RangeInclusiveMap<u32, &str> = range_inclusive_map!{};
+/// ```
+///
+/// Create a range map from some values.
 ///
 /// ```rust
 /// # use rangemap::range_inclusive_map;

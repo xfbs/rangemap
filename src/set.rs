@@ -1,3 +1,5 @@
+//! # [`RangeSet`] and related iterators.
+
 use core::borrow::Borrow;
 use core::fmt::{self, Debug};
 use core::iter::FromIterator;
@@ -14,19 +16,25 @@ use serde::{
 
 use crate::RangeMap;
 
-/// Intersection iterator over two [`RangeSet`].
+/// Iterator over the intersection of two [`RangeSet`].
+///
+/// This is crated by the [`intersection`][RangeSet::intersection] method, see its documentation
+/// for more information.
 pub type Intersection<'a, T> = crate::operations::Intersection<'a, Range<T>, Iter<'a, T>>;
 
-/// Union iterator over two [`RangeSet`].
+/// Iterator over the union of two [`RangeSet`].
+///
+/// This is crated by the [`union`][RangeSet::union] method, see its documentation for more
+/// information.
 pub type Union<'a, T> = crate::operations::Union<'a, Range<T>, Iter<'a, T>>;
 
-#[derive(Clone, Hash, Default, Eq, PartialEq, PartialOrd, Ord)]
-/// A set whose items are stored as (half-open) ranges bounded
-/// inclusively below and exclusively above `(start..end)`.
+/// Set which contains non-overlapping, half-open ranges as items.
+///
+/// Set whose items are stored as (half-open) ranges bounded inclusively below and exclusively
+/// above `(start..end)`.  On insertion, ranges which overlap are merged.
 ///
 /// See [`RangeMap`]'s documentation for more details.
-///
-/// [`RangeMap`]: struct.RangeMap.html
+#[derive(Clone, Hash, Default, Eq, PartialEq, PartialOrd, Ord)]
 pub struct RangeSet<T> {
     rm: RangeMap<T, ()>,
 }
@@ -35,7 +43,7 @@ impl<T> RangeSet<T>
 where
     T: Ord + Clone,
 {
-    /// Makes a new empty `RangeSet`.
+    /// Returns a new empty [`RangeSet`].
     #[cfg(feature = "const_fn")]
     pub const fn new() -> Self {
         RangeSet {
@@ -43,7 +51,10 @@ where
         }
     }
 
-    /// Makes a new empty `RangeSet`.
+    /// Returns a new empty [`RangeSet`].
+    ///
+    /// If you enabled the unstable `const_fn` feture of this crate, this method is a const
+    /// function.
     #[cfg(not(feature = "const_fn"))]
     pub fn new() -> Self {
         RangeSet {
@@ -61,8 +72,7 @@ where
         self.rm.contains_key(value)
     }
 
-    /// Gets an ordered iterator over all ranges,
-    /// ordered by range.
+    /// Gets an ordered iterator over all ranges, ordered by range.
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             inner: self.rm.iter(),
@@ -153,23 +163,41 @@ where
 
     /// Returns the first range in the set, if one exists. The range is the minimum range in this
     /// set.
+    ///
+    /// # Example
+    ///
+    /// Getting the first range of a non-empty range set.
+    ///
+    /// ```
+    /// # use rangemap::range_set;
+    /// let set = range_set![0..10, 20..30, 40..50];
+    /// assert_eq!(set.first(), Some(&(0..10)));
+    /// ```
     pub fn first(&self) -> Option<&Range<T>> {
         self.rm.first_range_value().map(|(range, _)| range)
     }
 
     /// Returns the last range in the set, if one exists. The range is the maximum range in this
     /// set.
+    ///
+    /// # Example
+    ///
+    /// Getting the last range of a non-empty range set.
+    ///
+    /// ```
+    /// # use rangemap::range_set;
+    /// let set = range_set![0..10, 20..30, 40..50];
+    /// assert_eq!(set.last(), Some(&(40..50)));
+    /// ```
     pub fn last(&self) -> Option<&Range<T>> {
         self.rm.last_range_value().map(|(range, _)| range)
     }
 }
 
-/// An iterator over the ranges of a `RangeSet`.
+/// Iterator over the ranges of a [`RangeSet`].
 ///
-/// This `struct` is created by the [`iter`] method on [`RangeSet`]. See its
-/// documentation for more.
-///
-/// [`iter`]: RangeSet::iter
+/// This struct is created by the [`iter`][RangeSet::iter] method, see its documentation for more
+/// information.
 pub struct Iter<'a, T> {
     inner: super::map::Iter<'a, T, ()>,
 }
@@ -195,12 +223,10 @@ where
     }
 }
 
-/// An owning iterator over the ranges of a `RangeSet`.
+/// Owning iterator over the ranges of a [`RangeSet`].
 ///
-/// This `struct` is created by the [`into_iter`] method on [`RangeSet`]
-/// (provided by the `IntoIterator` trait). See its documentation for more.
-///
-/// [`into_iter`]: IntoIterator::into_iter
+/// This struct is created by the [`into_iter`][IntoIterator::into_iter] method, see its
+/// documentation for more information.
 pub struct IntoIter<T> {
     inner: super::map::IntoIter<T, ()>,
 }
@@ -333,12 +359,9 @@ where
     }
 }
 
-/// An iterator over all ranges not covered by a `RangeSet`.
+/// Iterator over all ranges *not* covered by a [`RangeSet`].
 ///
-/// This `struct` is created by the [`gaps`] method on [`RangeSet`]. See its
-/// documentation for more.
-///
-/// [`gaps`]: RangeSet::gaps
+/// This struct is created by the [`gaps`][RangeSet::gaps] method, see its documentation for more.
 pub struct Gaps<'a, T> {
     inner: crate::map::Gaps<'a, T, ()>,
 }
@@ -357,13 +380,10 @@ where
     }
 }
 
-/// An iterator over all stored ranges partially or completely
-/// overlapped by a given range.
+/// Iterator over all ranges which partially or completely overlap a given range.
 ///
-/// This `struct` is created by the [`overlapping`] method on [`RangeSet`]. See its
+/// This struct is created by the [`overlapping`][RangeSet::overlapping] method, see its
 /// documentation for more.
-///
-/// [`overlapping`]: RangeSet::overlapping
 pub struct Overlapping<'a, T, R: Borrow<Range<T>> = &'a Range<T>> {
     inner: crate::map::Overlapping<'a, T, (), R>,
 }
@@ -422,7 +442,21 @@ impl<T: Ord + Clone, const N: usize> From<[Range<T>; N]> for RangeSet<T> {
 
 /// Create a [`RangeSet`] from a list of ranges.
 ///
-/// # Example
+/// This macro is a shorthand for creating a [`RangeSet`] from an expression, similar to the
+/// `vec![]` macro provided by the standard library.
+///
+/// #### Examples
+///
+/// Create an empty range set. The type is needed to give the compiler a hint as to what the value
+/// of the ranges is.
+///
+/// ```rust
+/// use rangemap::{RangeSet, range_set};
+///
+/// let set: RangeSet<u32> = range_set![];
+/// ```
+///
+/// Create a range set from a list of ranges.
 ///
 /// ```rust
 /// # use rangemap::range_set;

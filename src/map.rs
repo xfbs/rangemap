@@ -1,3 +1,5 @@
+//! # [`RangeMap`] and related iterators.
+
 use super::range_wrapper::RangeStartWrapper;
 use crate::range_wrapper::RangeEndWrapper;
 use crate::std_ext::*;
@@ -804,9 +806,22 @@ impl<K: Ord + Clone, V: Eq + Clone, const N: usize> From<[(Range<K>, V); N]> for
     }
 }
 
-/// Create a [`RangeMap`] from key-value pairs.
+/// Create a [`RangeMap`] from range-value pairs.
 ///
-/// # Example
+/// This macro is a shorthand for creating range maps from expressions of range and value pairs.
+/// The pairs are separated by arrows, similar to how match statements look like.
+///
+/// #### Examples
+///
+/// Create an empty range map.
+///
+/// ```rust
+/// use rangemap::{RangeMap, range_map};
+///
+/// let map: RangeMap<u32, &str> = range_map!{};
+/// ```
+///
+/// Create a range map from some values.
 ///
 /// ```rust
 /// # use rangemap::range_map;
